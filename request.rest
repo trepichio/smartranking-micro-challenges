@@ -1,0 +1,57 @@
+## Challenges
+### Create challenges
+POST http://localhost:8080/api/v1/challenges/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "dateTimeChallenge": "2020-05-04 18:00:00",
+  "requester": "61067ae8d57c244d9541dfbb",
+  "players": [
+    {
+      "_id": "61067ae8d57c244d9541dfbb"
+    },
+    {
+      "_id": "611de80389d692fd95f5a909"
+    }
+  ],
+  "category": "60d631addd5122136a7c49ab"
+}
+
+### Update a challenge
+PUT http://localhost:8080/api/v1/challenges/611de9c3f864ed2929bc0314 HTTP/1.1
+Content-Type: application/json
+
+{
+  "dateTimeChallenge": "2020-08-01 20:00:00",
+  "status": "Accepted"
+}
+
+### Get all challenges
+GET http://localhost:8080/api/v1/challenges HTTP/1.1
+
+### Get all challenges of a player
+GET http://localhost:8080/api/v1/challenges?playerId=61067ae8d57c244d9541dfbb HTTP/1.1
+
+### Get challenge by id
+GET http://localhost:8080/api/v1/challenges/611de9c3f864ed2929bc0314 HTTP/1.1
+
+### Delete a challenge
+DELETE http://localhost:8080/api/v1/challenges/60c9863703b5b94db0f822b4 HTTP/1.1
+
+
+## Matches
+### Add match to Challenge
+POST http://localhost:8080/api/v1/challenges/611de9c3f864ed2929bc0314/match/ HTTP/1.1
+Content-Type: application/json
+
+{
+  "winner": "611de80389d692fd95f5a909",
+  "result": [
+    {
+      "set": "6-1"
+    },
+    {
+      "set": "6-3"
+    }
+  ]
+}
