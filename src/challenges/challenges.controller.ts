@@ -9,6 +9,8 @@ import {
 import { ChallengesService } from './challenges.service';
 import { ChallengeInterface } from './interfaces/challenge.interface';
 
+const ackErrors: string[] = ['E1100', '_E404'];
+
 @Controller('challenges')
 export class ChallengesController {
   constructor(private readonly challengesService: ChallengesService) {}
@@ -36,6 +38,28 @@ export class ChallengesController {
       return await this.challengesService.getChallenges();
     } finally {
       await channel.ack(originalMessage);
+    }
+  }
+
+  @EventPattern('create-challenge')
+  async createChallenge(
+    @Payload() dto: ChallengeInterface,
+    @Ctx() context: RmqContext,
+  ): Promise<ChallengeInterface> {
+    this.logger.log(`create Challenge: ${JSON.stringify(dto)}`);
+
+    const channel = context.getChannelRef();
+    const originalMessage = context.getMessage();
+
+    try {
+      const challenge = await this.challengesService.createChallenge(dto);
+      await channel.ack(originalMessage);
+      return challenge;
+    } catch (error) {
+      this.logger.error(error.message);
+      if (ackErrors.some((errorCode) => error.message.includes(errorCode))) {
+        await channel.ack(originalMessage);
+      }
     }
   }
 }

@@ -7,6 +7,7 @@ import {
 import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ChallengeStatus } from './interfaces/challenge-status.enum';
 import { ChallengeInterface } from './interfaces/challenge.interface';
 
 @Injectable()
@@ -66,4 +67,23 @@ export class ChallengesService {
     }
   }
 
+  async createChallenge(dto: ChallengeInterface): Promise<ChallengeInterface> {
+    try {
+      const newChallenge = new this.challengeModel(dto);
+      dto.dateTimeRequest = new Date();
+
+      /**
+       * Set Current Request time and PENDING status
+       */
+      newChallenge.status = ChallengeStatus.PENDING;
+      newChallenge.dateTimeRequest = new Date();
+
+      return await newChallenge.save();
+    } catch (err) {
+      this.logger.error(
+        `Error creating challenge: ${JSON.stringify(err.message)}`,
+      );
+      throw new RpcException(err.message);
+    }
+  }
 }
