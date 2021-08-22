@@ -9,6 +9,7 @@ import {
 export class ClientProxySmartRanking {
   private clientProxyAdminInstance: ClientProxy;
   private clientProxyChallengesInstance: ClientProxy;
+  private clientProxyRankingsInstance: ClientProxy;
 
   private getClientProxyAdminBackendInstance(): ClientProxy {
     if (!this.clientProxyAdminInstance) {
@@ -23,6 +24,14 @@ export class ClientProxySmartRanking {
         this.createClientProxy('challenges-backend');
     }
     return this.clientProxyChallengesInstance;
+  }
+
+  private getClientProxyRankingsBackendInstance(): ClientProxy {
+    if (!this.clientProxyRankingsInstance) {
+      this.clientProxyRankingsInstance =
+        this.createClientProxy('rankings-backend');
+    }
+    return this.clientProxyRankingsInstance;
   }
 
   private createClientProxy(queueName: string): ClientProxy {
@@ -51,6 +60,8 @@ export class ClientProxySmartRanking {
         return this.getClientProxyAdminBackendInstance();
       case 'challenges':
         return this.getClientProxyChallengesBackendInstance();
+      case 'rankings':
+        return this.getClientProxyRankingsBackendInstance();
     }
   }
 }
