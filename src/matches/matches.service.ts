@@ -30,7 +30,24 @@ export class MatchesService {
        */
       const matchSaved = await newMatch.save();
       this.logger.log(`Created match ${JSON.stringify(matchSaved._id)}`);
-      return matchSaved;
+
+      const matchId = matchSaved._id;
+
+      /**
+       * get the challenge of the match
+       */
+      const challenge: ChallengeInterface = await this.clientChallenges
+        .send('get-challenges', { challengeId: match.challenge })
+        .toPromise();
+
+      this.logger.log(`challenge:${JSON.stringify(challenge)}`);
+
+      /**
+       * we call the 'add-match-to-challenge' topic to update the challenge
+       */
+      return await this.clientChallenges
+        .emit('add-match-to-challenge', { matchId, challenge })
+        .toPromise();
     } catch (error) {
       this.logger.error(`${JSON.stringify(error.message)}`);
       throw new RpcException(error.message);
