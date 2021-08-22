@@ -15,7 +15,6 @@ export class ChallengesService {
   constructor(
     @InjectModel('Challenge')
     private readonly challengeModel: Model<ChallengeInterface>,
-
   ) {}
 
   private readonly logger = new Logger(ChallengesService.name);
@@ -85,5 +84,55 @@ export class ChallengesService {
       );
       throw new RpcException(err.message);
     }
+  }
+
+  async updateChallenge(
+    challengeId: string,
+    dto: ChallengeInterface,
+  ): Promise<void> {
+    try {
+      const challengeFound = await this.getChallengeById(challengeId);
+
+      /**
+       * add Date and Time for Response when updating status
+       */
+      if (dto.status) {
+        challengeFound.dateTimeReply = new Date();
+      }
+
+      Object.assign(challengeFound, dto);
+
+      return await this.update(challengeFound.id, challengeFound);
+    } catch (err) {
+      this.logger.error(
+        `Error updating challenge: ${JSON.stringify(err.message)}`,
+      );
+      throw new RpcException(err.message);
+    }
+  }
+
+  private async update(
+    id: string,
+    data: ChallengeInterface | { status: ChallengeStatus },
+  ): Promise<void> {
+    this.logger.log(`data to update: ${JSON.stringify(data, null, 2)}`);
+    await this.challengeModel.findByIdAndUpdate(id, { $set: data }).exec();
+  }
+
+  async deleteChallenge(challengeId: string) {
+    try {
+      const challengeFound = await this.getChallengeById(challengeId);
+
+      await this.delete(challengeFound.id);
+    } catch (err) {
+      this.logger.error(
+        `Error deleting challenge: ${JSON.stringify(err.message)}`,
+      );
+      throw new RpcException(err.message);
+    }
+  }
+
+  private async delete(id: string): Promise<void> {
+    await this.update(id, { status: ChallengeStatus.CANCELLED });
   }
 }

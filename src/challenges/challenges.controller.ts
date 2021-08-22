@@ -62,4 +62,51 @@ export class ChallengesController {
       }
     }
   }
+
+  @EventPattern('update-challenge')
+  async updateChallenge(
+    @Payload()
+    { challengeId, dto }: { challengeId: string; dto: ChallengeInterface },
+    @Ctx() context: RmqContext,
+  ): Promise<void> {
+    this.logger.log(`update Challenge: ${JSON.stringify(challengeId)}`);
+    this.logger.log(`with data:${JSON.stringify(dto)}`);
+
+    const channel = context.getChannelRef();
+    const originalMessage = context.getMessage();
+
+    try {
+      await this.challengesService.updateChallenge(challengeId, dto);
+      await channel.ack(originalMessage);
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (ackErrors.some((errorCode) => error.message.includes(errorCode))) {
+        await channel.ack(originalMessage);
+      }
+    }
+  }
+
+  @EventPattern('delete-challenge')
+  async deleteOne(
+    @Payload() challengeId: string,
+    @Ctx() context: RmqContext,
+  ): Promise<void> {
+    this.logger.log(`delete Challenge: ${challengeId}`);
+
+    const channel = context.getChannelRef();
+    const originalMessage = context.getMessage();
+
+    try {
+      await this.challengesService.deleteChallenge(challengeId);
+      await channel.ack(originalMessage);
+      this.logger.log('Deleted Challenge');
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (ackErrors.some((errorCode) => error.message.includes(errorCode))) {
+        await channel.ack(originalMessage);
+      }
+    }
+  }
 }
