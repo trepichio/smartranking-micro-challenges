@@ -109,4 +109,30 @@ export class ChallengesController {
       }
     }
   }
+
+  @EventPattern('add-match-to-challenge')
+  async addMatchToChallenge(
+    @Payload()
+    { matchId, challenge }: { matchId: string; challenge: ChallengeInterface },
+    @Ctx() context: RmqContext,
+  ): Promise<void> {
+    this.logger.log(
+      `add Match ${matchId} to Challenge: ${JSON.stringify(challenge)}`,
+    );
+
+    const channel = context.getChannelRef();
+    const originalMessage = context.getMessage();
+
+    try {
+      await this.challengesService.addMatchToChallenge(matchId, challenge);
+      await channel.ack(originalMessage);
+      this.logger.log('Added Match to Challenge');
+    } catch (error) {
+      this.logger.error(error.message);
+
+      if (ackErrors.some((errorCode) => error.message.includes(errorCode))) {
+        await channel.ack(originalMessage);
+      }
+    }
+  }
 }

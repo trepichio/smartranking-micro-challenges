@@ -7,6 +7,7 @@ import {
 import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { MatchInterface } from 'src/matches/interfaces/match.interface';
 import { ChallengeStatus } from './interfaces/challenge-status.enum';
 import { ChallengeInterface } from './interfaces/challenge.interface';
 
@@ -15,6 +16,8 @@ export class ChallengesService {
   constructor(
     @InjectModel('Challenge')
     private readonly challengeModel: Model<ChallengeInterface>,
+    @InjectModel('Match')
+    private readonly matchModel: Model<MatchInterface>,
   ) {}
 
   private readonly logger = new Logger(ChallengesService.name);
@@ -134,5 +137,38 @@ export class ChallengesService {
 
   private async delete(id: string): Promise<void> {
     await this.update(id, { status: ChallengeStatus.CANCELLED });
+  }
+
+  async addMatchToChallenge(
+    matchId: string,
+    challenge: ChallengeInterface,
+  ): Promise<void> {
+    try {
+      /**
+       * set Challenge's status as concluded and associate the match
+       */
+      challenge.status = ChallengeStatus.FINISHED;
+      challenge.match = matchId;
+
+      /**
+       * and then update the challenge in the database
+       */
+      await this.updateChallenge(challenge._id, challenge).catch(
+        async (error) => {
+          this.logger.error(error);
+          /**
+           * If for any reason the update of challenge fails
+           * it is needed to delete the match
+           */
+          await this.matchModel.deleteOne({ _id: matchId }).exec();
+          throw new InternalServerErrorException();
+        },
+      );
+    } catch (err) {
+      this.logger.error(
+        `Error adding match to challenge: ${JSON.stringify(err.message)}`,
+      );
+      throw new RpcException(err.message);
+    }
   }
 }
