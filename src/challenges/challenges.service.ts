@@ -29,4 +29,41 @@ export class ChallengesService {
       throw new RpcException(err.message);
     }
   }
+
+  async getChallengesByPlayerId(
+    playerId: string,
+  ): Promise<ChallengeInterface[]> {
+    try {
+      return await this.challengeModel
+        .find({ players: { $all: [playerId] } })
+        .exec();
+    } catch (err) {
+      this.logger.error(
+        `Error getting challenges: ${JSON.stringify(err.message)}`,
+      );
+      throw new RpcException(err.message);
+    }
+  }
+
+  async getChallengeById(challengeId: string): Promise<ChallengeInterface> {
+    try {
+      const challengeFound = await this.challengeModel
+        .findById(challengeId)
+        .exec();
+
+      if (!challengeFound) {
+        throw new NotFoundException(
+          `This challenge ${challengeId} cannot be found.`,
+        );
+      }
+
+      return challengeFound;
+    } catch (err) {
+      this.logger.error(
+        `Error getting challenge: ${JSON.stringify(err.message)}`,
+      );
+      throw new RpcException(err.message);
+    }
+  }
+
 }
