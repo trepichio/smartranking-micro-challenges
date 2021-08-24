@@ -20,7 +20,7 @@ export class MatchesController {
     const originalMessage = context.getMessage();
 
     try {
-      this.logger.log(`Creating match ${JSON.stringify(match)}`);
+      this.logger.log(`Creating match ${JSON.stringify(match, null, 2)}`);
       await this.matchService.createMatch(match);
       await channel.ack(originalMessage);
     } catch (error) {

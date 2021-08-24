@@ -40,7 +40,7 @@ export class MatchesService {
         .send('get-challenges', { challengeId: match.challenge })
         .toPromise();
 
-      this.logger.log(`challenge:${JSON.stringify(challenge)}`);
+      this.logger.log(`challenge:${JSON.stringify(challenge, null, 2)}`);
 
       /**
        * we call the 'add-match-to-challenge' topic to update the challenge

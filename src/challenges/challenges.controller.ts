@@ -46,7 +46,7 @@ export class ChallengesController {
     @Payload() dto: ChallengeInterface,
     @Ctx() context: RmqContext,
   ): Promise<ChallengeInterface> {
-    this.logger.log(`create Challenge: ${JSON.stringify(dto)}`);
+    this.logger.log(`create Challenge: ${JSON.stringify(dto, null, 2)}`);
 
     const channel = context.getChannelRef();
     const originalMessage = context.getMessage();
@@ -70,7 +70,7 @@ export class ChallengesController {
     @Ctx() context: RmqContext,
   ): Promise<void> {
     this.logger.log(`update Challenge: ${JSON.stringify(challengeId)}`);
-    this.logger.log(`with data:${JSON.stringify(dto)}`);
+    this.logger.log(`with data:${JSON.stringify(dto, null, 2)}`);
 
     const channel = context.getChannelRef();
     const originalMessage = context.getMessage();
@@ -117,7 +117,7 @@ export class ChallengesController {
     @Ctx() context: RmqContext,
   ): Promise<void> {
     this.logger.log(
-      `add Match ${matchId} to Challenge: ${JSON.stringify(challenge)}`,
+      `add Match ${matchId} to Challenge: ${JSON.stringify(challenge, null, 2)}`,
     );
 
     const channel = context.getChannelRef();
