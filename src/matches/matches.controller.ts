@@ -1,6 +1,6 @@
 import { Controller, Logger } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { MatchInterface } from './interfaces/match.interface';
+import { IMatch } from './interfaces/match.interface';
 import { MatchesService } from './matches.service';
 
 const ackErrors: string[] = ['E1100', '_E404'];
@@ -13,7 +13,7 @@ export class MatchesController {
 
   @EventPattern('create-match')
   async createMatch(
-    @Payload() match: MatchInterface,
+    @Payload() match: IMatch,
     @Ctx() context: RmqContext,
   ): Promise<void> {
     const channel = context.getChannelRef();

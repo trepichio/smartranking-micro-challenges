@@ -2,14 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ChallengeInterface } from 'src/challenges/interfaces/challenge.interface';
+import { IChallenge } from 'src/challenges/interfaces/challenge.interface';
 import { ClientProxySmartRanking } from 'src/proxyrmq/client-proxy.provider';
-import { MatchInterface } from './interfaces/match.interface';
+import { IMatch } from './interfaces/match.interface';
 
 @Injectable()
 export class MatchesService {
   constructor(
-    @InjectModel('Match') private matchModel: Model<MatchInterface>,
+    @InjectModel('Match') private matchModel: Model<IMatch>,
     private clientProxySmartRanking: ClientProxySmartRanking,
   ) {}
 
@@ -21,7 +21,7 @@ export class MatchesService {
   private readonly clientRankings =
     this.clientProxySmartRanking.getClientProxyInstance('rankings');
 
-  async createMatch(match: MatchInterface): Promise<MatchInterface> {
+  async createMatch(match: IMatch): Promise<IMatch> {
     try {
       /**
        * Create a match
@@ -39,7 +39,7 @@ export class MatchesService {
       /**
        * get the challenge of the match
        */
-      const challenge: ChallengeInterface = await this.clientChallenges
+      const challenge: IChallenge = await this.clientChallenges
         .send('get-challenges', { challengeId: match.challenge })
         .toPromise();
 

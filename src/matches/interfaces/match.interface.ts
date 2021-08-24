@@ -1,13 +1,13 @@
 import { Document } from 'mongoose';
 
-export interface MatchInterface extends Document {
+export interface IMatch extends Document {
   winner: string;
-  result: Array<ResultInterface>;
+  result: Array<IResult>;
   players: Array<string>;
   category: string;
   challenge: string;
 }
 
-export interface ResultInterface {
+export interface IResult {
   set: string;
 }

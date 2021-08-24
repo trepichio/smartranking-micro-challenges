@@ -7,7 +7,7 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { ChallengesService } from './challenges.service';
-import { ChallengeInterface } from './interfaces/challenge.interface';
+import { IChallenge } from './interfaces/challenge.interface';
 
 const ackErrors: string[] = ['E1100', '_E404'];
 
@@ -21,7 +21,7 @@ export class ChallengesController {
   async getChallenge(
     @Payload() payload: { challengeId: string; playerId: string },
     @Ctx() context: RmqContext,
-  ): Promise<ChallengeInterface | ChallengeInterface[]> {
+  ): Promise<IChallenge | IChallenge[]> {
     const channel = context.getChannelRef();
     const originalMessage = context.getMessage();
 
@@ -43,9 +43,9 @@ export class ChallengesController {
 
   @EventPattern('create-challenge')
   async createChallenge(
-    @Payload() dto: ChallengeInterface,
+    @Payload() dto: IChallenge,
     @Ctx() context: RmqContext,
-  ): Promise<ChallengeInterface> {
+  ): Promise<IChallenge> {
     this.logger.log(`create Challenge: ${JSON.stringify(dto, null, 2)}`);
 
     const channel = context.getChannelRef();
@@ -66,7 +66,7 @@ export class ChallengesController {
   @EventPattern('update-challenge')
   async updateChallenge(
     @Payload()
-    { challengeId, dto }: { challengeId: string; dto: ChallengeInterface },
+    { challengeId, dto }: { challengeId: string; dto: IChallenge },
     @Ctx() context: RmqContext,
   ): Promise<void> {
     this.logger.log(`update Challenge: ${JSON.stringify(challengeId)}`);
@@ -113,11 +113,15 @@ export class ChallengesController {
   @EventPattern('add-match-to-challenge')
   async addMatchToChallenge(
     @Payload()
-    { matchId, challenge }: { matchId: string; challenge: ChallengeInterface },
+    { matchId, challenge }: { matchId: string; challenge: IChallenge },
     @Ctx() context: RmqContext,
   ): Promise<void> {
     this.logger.log(
-      `add Match ${matchId} to Challenge: ${JSON.stringify(challenge, null, 2)}`,
+      `add Match ${matchId} to Challenge: ${JSON.stringify(
+        challenge,
+        null,
+        2,
+      )}`,
     );
 
     const channel = context.getChannelRef();

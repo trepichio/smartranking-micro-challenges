@@ -7,22 +7,22 @@ import {
 import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { MatchInterface } from 'src/matches/interfaces/match.interface';
+import { IMatch } from 'src/matches/interfaces/match.interface';
 import { ChallengeStatus } from './interfaces/challenge-status.enum';
-import { ChallengeInterface } from './interfaces/challenge.interface';
+import { IChallenge } from './interfaces/challenge.interface';
 
 @Injectable()
 export class ChallengesService {
   constructor(
     @InjectModel('Challenge')
-    private readonly challengeModel: Model<ChallengeInterface>,
+    private readonly challengeModel: Model<IChallenge>,
     @InjectModel('Match')
-    private readonly matchModel: Model<MatchInterface>,
+    private readonly matchModel: Model<IMatch>,
   ) {}
 
   private readonly logger = new Logger(ChallengesService.name);
 
-  async getChallenges(): Promise<ChallengeInterface[]> {
+  async getChallenges(): Promise<IChallenge[]> {
     try {
       return await this.challengeModel.find().exec();
     } catch (err) {
@@ -33,9 +33,7 @@ export class ChallengesService {
     }
   }
 
-  async getChallengesByPlayerId(
-    playerId: string,
-  ): Promise<ChallengeInterface[]> {
+  async getChallengesByPlayerId(playerId: string): Promise<IChallenge[]> {
     try {
       return await this.challengeModel
         .find({ players: { $all: [playerId] } })
@@ -48,7 +46,7 @@ export class ChallengesService {
     }
   }
 
-  async getChallengeById(challengeId: string): Promise<ChallengeInterface> {
+  async getChallengeById(challengeId: string): Promise<IChallenge> {
     try {
       const challengeFound = await this.challengeModel
         .findById(challengeId)
@@ -69,7 +67,7 @@ export class ChallengesService {
     }
   }
 
-  async createChallenge(dto: ChallengeInterface): Promise<ChallengeInterface> {
+  async createChallenge(dto: IChallenge): Promise<IChallenge> {
     try {
       const newChallenge = new this.challengeModel(dto);
       dto.dateTimeRequest = new Date();
@@ -89,10 +87,7 @@ export class ChallengesService {
     }
   }
 
-  async updateChallenge(
-    challengeId: string,
-    dto: ChallengeInterface,
-  ): Promise<void> {
+  async updateChallenge(challengeId: string, dto: IChallenge): Promise<void> {
     try {
       const challengeFound = await this.getChallengeById(challengeId);
 
@@ -116,7 +111,7 @@ export class ChallengesService {
 
   private async update(
     id: string,
-    data: ChallengeInterface | { status: ChallengeStatus },
+    data: IChallenge | { status: ChallengeStatus },
   ): Promise<void> {
     this.logger.log(`data to update: ${JSON.stringify(data, null, 2)}`);
     await this.challengeModel.findByIdAndUpdate(id, { $set: data }).exec();
@@ -141,7 +136,7 @@ export class ChallengesService {
 
   async addMatchToChallenge(
     matchId: string,
-    challenge: ChallengeInterface,
+    challenge: IChallenge,
   ): Promise<void> {
     try {
       /**

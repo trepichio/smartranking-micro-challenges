@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 import { ChallengeStatus } from './challenge-status.enum';
 
-export interface ChallengeInterface extends Document {
+export interface IChallenge extends Document {
   dateTimeChallenge: Date;
   status: ChallengeStatus;
   dateTimeRequest: Date;
