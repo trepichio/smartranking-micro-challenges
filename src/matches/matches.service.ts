@@ -18,6 +18,9 @@ export class MatchesService {
   private readonly clientChallenges =
     this.clientProxySmartRanking.getClientProxyInstance('challenges');
 
+  private readonly clientRankings =
+    this.clientProxySmartRanking.getClientProxyInstance('rankings');
+
   async createMatch(match: MatchInterface): Promise<MatchInterface> {
     try {
       /**
@@ -45,8 +48,16 @@ export class MatchesService {
       /**
        * we call the 'add-match-to-challenge' topic to update the challenge
        */
-      return await this.clientChallenges
+      await this.clientChallenges
         .emit('add-match-to-challenge', { matchId, challenge })
+        .toPromise();
+
+      /**
+       * Send match to Rankings microservice in order to process it
+       * and update the ranking
+       */
+      return await this.clientRankings
+        .emit('proccess-match', { matchId, match: matchSaved })
         .toPromise();
     } catch (error) {
       this.logger.error(`${JSON.stringify(error.message)}`);
