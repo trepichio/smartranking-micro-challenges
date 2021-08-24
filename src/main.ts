@@ -21,7 +21,7 @@ async function bootstrap() {
         `amqp://${BROKER_USER}:${BROKER_PASSWORD}@${BROKER_IP}:${BROKER_PORT}/${BROKER_VIRTUAL_HOST}`,
       ],
       queue: 'challenges-backend',
-      noAck: true,
+      noAck: false,
     },
   });
 
