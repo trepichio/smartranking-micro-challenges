@@ -6,6 +6,7 @@ export interface IMatch extends Document {
   players: Array<string>;
   category: string;
   challenge: string;
+  dateTimeChallenge: Date;
 }
 
 export interface IResult {

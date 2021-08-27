@@ -3,6 +3,7 @@ import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IChallenge } from 'src/challenges/interfaces/challenge.interface';
+import { HelperFunctions } from 'src/common/helpers';
 import { ClientProxySmartRanking } from 'src/proxyrmq/client-proxy.provider';
 import { IMatch } from './interfaces/match.interface';
 
@@ -11,6 +12,7 @@ export class MatchesService {
   constructor(
     @InjectModel('Match') private matchModel: Model<IMatch>,
     private clientProxySmartRanking: ClientProxySmartRanking,
+    private helpers: HelperFunctions,
   ) {}
 
   private readonly logger = new Logger(MatchesService.name);
@@ -24,6 +26,22 @@ export class MatchesService {
   async createMatch(match: IMatch): Promise<IMatch> {
     try {
       /**
+       * get the challenge of the match
+       */
+      const challenge = await this.clientChallenges
+        .send('get-challenges', { challengeId: match.challenge })
+        .toPromise();
+
+      this.logger.log(`challenge:${JSON.stringify(challenge, null, 2)}`);
+
+      /**
+       * set the date of the match
+       */
+      match.dateTimeChallenge = this.helpers.convertLocaleStringToDate(
+        challenge.dateTimeChallenge,
+      );
+
+      /**
        * Create a match
        */
       const newMatch = new this.matchModel(match);
@@ -35,15 +53,6 @@ export class MatchesService {
       this.logger.log(`Created match ${JSON.stringify(matchSaved._id)}`);
 
       const matchId = matchSaved._id;
-
-      /**
-       * get the challenge of the match
-       */
-      const challenge: IChallenge = await this.clientChallenges
-        .send('get-challenges', { challengeId: match.challenge })
-        .toPromise();
-
-      this.logger.log(`challenge:${JSON.stringify(challenge, null, 2)}`);
 
       /**
        * we call the 'add-match-to-challenge' topic to update the challenge

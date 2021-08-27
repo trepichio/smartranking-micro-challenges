@@ -17,6 +17,7 @@ export const MatchSchema = new mongoose.Schema(
         set: { type: 'string' },
       },
     ],
+    dateTimeChallenge: { type: Date },
   },
   {
     timestamps: true,
