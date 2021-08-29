@@ -4,10 +4,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IMatch } from 'src/matches/interfaces/match.interface';
+import { ClientProxySmartRanking } from 'src/proxyrmq/client-proxy.provider';
 import { ChallengeStatus } from './interfaces/challenge-status.enum';
 import { IChallenge } from './interfaces/challenge.interface';
 
@@ -18,7 +19,11 @@ export class ChallengesService {
     private readonly challengeModel: Model<IChallenge>,
     @InjectModel('Match')
     private readonly matchModel: Model<IMatch>,
+    private readonly clientSmartRanking: ClientProxySmartRanking,
   ) {}
+
+  private clientNotification: ClientProxy =
+    this.clientSmartRanking.getClientProxyInstance('notifications');
 
   private readonly logger = new Logger(ChallengesService.name);
 
@@ -78,7 +83,20 @@ export class ChallengesService {
       newChallenge.status = ChallengeStatus.PENDING;
       newChallenge.dateTimeRequest = new Date();
 
-      return await newChallenge.save();
+      /**
+       * Save the challenge in the database
+       */
+      await newChallenge.save();
+
+      /**
+       * and then send a notification to the rival player
+       * to accept or reject the challenge
+       */
+      this.clientNotification.emit('notification-new-challenge', {
+        challenge: newChallenge,
+      });
+
+      return newChallenge;
     } catch (err) {
       this.logger.error(
         `Error creating challenge: ${JSON.stringify(err.message)}`,
